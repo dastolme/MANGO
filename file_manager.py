@@ -40,7 +40,9 @@ class RecoRunManager:
             try:
                 with uproot.open(f"{data_dir_path}reco_run{run_number}_3D.root") as root_file:
                     CMOS_root_file = root_file["Events"].arrays(param_list, library="ak")
-                    df_data = ak.to_dataframe(CMOS_root_file)
+                    PMT_root_file = root_file["PMT_Events"].arrays(library="ak")
+                    GEM_root_file = root_file["GEM_Events"].arrays(library="ak")
+                    df_data = [ak.to_dataframe(CMOS_root_file), ak.to_dataframe(PMT_root_file), ak.to_dataframe(GEM_root_file)]
                 return df_data
             except FileNotFoundError as e:
                 print("FileNotFound")
@@ -94,7 +96,11 @@ class RecoRunManager:
             [df_data_list.append(run.dataframe) for run in run_list if run.type == type]
             
             if len(df_data_list) != 0:
-                CMOS_df = pd.concat([dataframe for dataframe in df_data_list])
+                CMOS_df = pd.concat([dataframe[0] for dataframe in df_data_list])
+                PMT_df = pd.concat([dataframe[1] for dataframe in df_data_list])
+                GEM_df = pd.concat([dataframe[2] for dataframe in df_data_list])
                 store['CMOS'] = CMOS_df
+                store['PMT'] = PMT_df
+                store['GEM'] = GEM_df
 
             store.close()
