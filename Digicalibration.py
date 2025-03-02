@@ -117,17 +117,18 @@ for hist in hists_amplitudes:
     err_means.append(hist.GetRMS())
     
 
-graph1=grapherr(input_charges,means,1E-15*np.ones(len(input_charges)),err_means   ,"Charges","Mean of minimum values","Mean of minimum values vs Run number", color=4, markerstyle=22, markersize=2,write=False)
+graph1=grapherr(means,input_charges,err_means,1E-15*np.ones(len(input_charges))   ,"Mean of minimum values","Charge[C]","Charge vs Mean", color=4, markerstyle=22, markersize=2,write=False)
 
-fit_func = ROOT.TF1("fit_func", "pol1", 0, 0.3E-12)
-fit_func.SetParameter(0, -60)
-fit_func.SetParameter(1, -1.32E+16)
+fit_func = ROOT.TF1("fit_func", "pol1", -4000,0)
+fit_func.SetParameter(0, -5.23092e-15)
+fit_func.SetParameter(1, -7.52624e-17)
 
 canvas = ROOT.TCanvas("canvas", "Fit Canvas", 1000, 1000)
 canvas.SetLeftMargin(0.15)
 canvas.SetRightMargin(0.12)
-graph1.GetXaxis().SetRangeUser(0, 300E-15)
-graph1.Fit(fit_func, "RQ")
+graph1.GetXaxis().SetRangeUser(-4096,0)
+graph1.GetYaxis().SetRangeUser(0,300E-15)
+graph1.Fit(fit_func, "R")
 graph1.Draw("AP")
 
 pave_text = ROOT.TPaveText(0.6, 0.7, 0.88, 0.9, "NDC")
@@ -136,7 +137,7 @@ pave_text.SetTextAlign(12)
 pave_text.AddText(f"Fit Parameters:")
 pave_text.AddText(f"Slope: {fit_func.GetParameter(1):.2e} +/- {fit_func.GetParError(1):.2e}")
 pave_text.AddText(f"Intercept: {fit_func.GetParameter(0):.2e} +/- {fit_func.GetParError(0):.2e}")
-pave_text.AddText(f"Chi2/NDF: {fit_func.GetChisquare() / fit_func.GetNDF():.2e}")
+if fit_func.GetNDF() !=0: pave_text.AddText(f"Chi2/NDF: {fit_func.GetChisquare() / fit_func.GetNDF():.2e}")
 pave_text.Draw("same")
 
 graph1.Write()
