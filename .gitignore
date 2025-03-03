@@ -1,6 +1,8 @@
 Reco/
 *.png
 *.csv
+picoammeter_Data/
+*.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
