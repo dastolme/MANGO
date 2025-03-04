@@ -21,3 +21,11 @@ anal_GainScan_CAM.py --hfo_qnt 1 --voltages 390 500 --fit_range 390 420
 ## gainPico.py
 
 tool to measure the electron gain of MANGO
+
+## checkUniformiry.cxx
+
+compile with g++ checkUniformity.cxx -o uniformity `root-config --cflags --libs` the run uniformity recofile.root
+
+## chargeGainfromQUEST.py
+
+from measurment summarized in LY_HeCF4.txt try to get the electronic gain with conversion
