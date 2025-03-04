@@ -184,6 +184,11 @@ vgem_numbers = np.array(vgem_numbers)
 net_means = np.array(net_means)
 net_errors = np.array(net_errors)
 
+R_protection=33E6
+voltage_drop=abs(R_protection*net_means
+)
+vgem_number_corrected = (3*vgem_numbers - voltage_drop)/3
+
 print("VGEM Numbers:", vgem_numbers)
 print("Net Means:", net_means)
 print("Net Errors:", net_errors)
@@ -191,12 +196,14 @@ print("Net Errors:", net_errors)
 main_file = ROOT.TFile("GainPico.root","RECREATE")
 grapherr(vgem_numbers, net_means, np.zeros_like(net_means), net_errors, "VGEM [V]", "Current [A]", "Current vs VGEM ", write=True)
 
+
+#! gain
 # Calculate the gain from the net means
 gains = abs(net_means) / (rate * e*n0)
 gain_errors = gains*np.sqrt((net_errors/net_means)**2 + (err_rate/rate)**2)
 
 gainPlot=grapherr(vgem_numbers, gains, np.ones(len(vgem_numbers)), gain_errors, "VGEM [V]", "Gain", "Gain vs VGEM", write=False,markerstyle=21)
-expo=ROOT.TF1("expo","expo",300,420)
+expo=ROOT.TF1("expo","expo",300,410)
 gainPlot.Fit("expo","RQ")
 gainPlot.Write()
 
@@ -213,3 +220,24 @@ pavetext.SetTextAlign(12)
 
 
 plot_tgrapherrors(gainPlot, "GainPico_HeCF4.png", setLog=True, setGrid=True, pavetext=pavetext)
+
+#! gain corrected
+
+gainPlot=grapherr(vgem_number_corrected, gains, np.ones(len(vgem_numbers)), gain_errors, "VGEM corr [V]", "Gain", "Gain vs VGEM", write=False,markerstyle=21)
+expo=ROOT.TF1("expo","expo",300,420)
+gainPlot.Fit("expo","RQ")
+gainPlot.Write()
+
+pavetext = ROOT.TPaveText(0.15, 0.7, 0.45, 0.9, "NDC")
+pavetext.AddText(f"Gain = exp(A + B * VGEM)")
+pavetext.AddText(f"A = {expo.GetParameter(0):.2e} +/- {expo.GetParError(0):.2e}")
+pavetext.AddText(f"B = {expo.GetParameter(1):.2e} +/- {expo.GetParError(1):.2e}")
+if expo.GetNDF() != 0:
+    pavetext.AddText(f"Chi2/NDF: {expo.GetChisquare() / expo.GetNDF():.2e}")
+pavetext.SetFillStyle(0)  # No fill
+pavetext.SetBorderSize(0)  # No border
+pavetext.SetFillColorAlpha(ROOT.kWhite, 0)  # Fully transparent fill color
+pavetext.SetTextAlign(12)
+
+
+plot_tgrapherrors(gainPlot, "GainPico_corr_HeCF4.png", setLog=True, setGrid=True, pavetext=pavetext)
