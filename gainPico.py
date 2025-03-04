@@ -8,7 +8,11 @@ import re
 import matplotlib.pyplot as plt
 
 #meassured from Plateau
+#first measuremtn
 rate=12E3
+err_rate=0.2E3
+#second mesurement
+rate=10E3
 err_rate=0.2E3
 n0=168
 e=1.6E-19
@@ -184,9 +188,12 @@ vgem_numbers = np.array(vgem_numbers)
 net_means = np.array(net_means)
 net_errors = np.array(net_errors)
 
+#first measuremtn
 R_protection=33E6
-voltage_drop=abs(R_protection*net_means
-)
+#second measurement
+R_protection=1E6
+
+voltage_drop=abs(R_protection*net_means)
 vgem_number_corrected = (3*vgem_numbers - voltage_drop)/3
 
 print("VGEM Numbers:", vgem_numbers)
@@ -223,12 +230,12 @@ plot_tgrapherrors(gainPlot, "GainPico_HeCF4.png", setLog=True, setGrid=True, pav
 
 #! gain corrected
 
-gainPlot=grapherr(vgem_number_corrected, gains, np.ones(len(vgem_numbers)), gain_errors, "VGEM corr [V]", "Gain", "Gain vs VGEM", write=False,markerstyle=21)
-expo=ROOT.TF1("expo","expo",300,420)
+gainPlot=grapherr(vgem_number_corrected, gains, np.ones(len(vgem_numbers)), gain_errors, "VGEM corr [V]", "Gain", "Gain vs VGEM Corrected", write=False,markerstyle=21)
+expo=ROOT.TF1("expo","expo",300,430)
 gainPlot.Fit("expo","RQ")
 gainPlot.Write()
 
-pavetext = ROOT.TPaveText(0.15, 0.7, 0.45, 0.9, "NDC")
+pavetext = ROOT.TPaveText(0.15, 0.6, 0.5, 0.9, "NDC")
 pavetext.AddText(f"Gain = exp(A + B * VGEM)")
 pavetext.AddText(f"A = {expo.GetParameter(0):.2e} +/- {expo.GetParError(0):.2e}")
 pavetext.AddText(f"B = {expo.GetParameter(1):.2e} +/- {expo.GetParError(1):.2e}")
@@ -238,6 +245,42 @@ pavetext.SetFillStyle(0)  # No fill
 pavetext.SetBorderSize(0)  # No border
 pavetext.SetFillColorAlpha(ROOT.kWhite, 0)  # Fully transparent fill color
 pavetext.SetTextAlign(12)
+pavetext.AddText("#color[2]{1M#Omega resistor, no correction on VGEM}")
+#pavetext.AddText("#color[4]{33M#Omega resistor VGEM corrected}")
+pavetext.AddText("#color[4]{1M#Omega resistor VGEM corrected}")
 
+#! test point
+noise_mega_curr=read_second_column("picoammeter_Data/BKG_HFO_0_VGEM430_1_MOhm.txt")
+source_mega_curr=read_second_column("picoammeter_Data/SOURCE_HFO_0_VGEM430_1_MOhm.txt")
+new_rate=9.5E3
+err_new_rate=0.5E3
 
-plot_tgrapherrors(gainPlot, "GainPico_corr_HeCF4.png", setLog=True, setGrid=True, pavetext=pavetext)
+# Calculate the mean and standard error of the mean
+mean_noise_mega_curr = np.mean(noise_mega_curr)
+mean_source_mega_curr = np.mean(source_mega_curr)
+mean_noise_error = np.std(noise_mega_curr) / np.sqrt(len(noise_mega_curr))
+mean_source_error = np.std(source_mega_curr) / np.sqrt(len(source_mega_curr))
+
+# Calculate the net current and error
+net_curr = mean_source_mega_curr - mean_noise_mega_curr
+net_curr_error = np.sqrt(mean_source_error**2 + mean_noise_error**2)
+
+# Calculate the gain
+gain = abs(net_curr) / (new_rate * e*n0)
+gain_error = gain*np.sqrt((net_curr_error/net_curr)**2 + (err_new_rate/new_rate)**2)
+
+print("Gain 1Mega 430V: ", gain, "+/-", gain_error)
+
+new_tgraph=grapherr([430], [gain], [1], [gain_error], "VGEM [V]", "Gain", "Gain vs VGEM no voltage drop", write=True,markerstyle=20, color=2)
+
+mulitgraph=ROOT.TMultiGraph()
+
+mulitgraph.Add(gainPlot)
+mulitgraph.Add(new_tgraph)
+
+mulitgraph.SetNameTitle("Gain vs VGEM","Gain vs VGEM")
+mulitgraph.GetXaxis().SetTitle("VGEM [V]")
+mulitgraph.GetYaxis().SetTitle("Gain")
+mulitgraph.GetYaxis().SetRangeUser(1E5, 5E6)
+
+plot_tgrapherrors(mulitgraph, "GainPico_corr_HeCF4.png", setLog=True, setGrid=True, pavetext=pavetext)
