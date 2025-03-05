@@ -29,3 +29,7 @@ compile with g++ checkUniformity.cxx -o uniformity `root-config --cflags --libs`
 ## chargeGainfromQUEST.py
 
 from measurment summarized in LY_HeCF4.txt try to get the electronic gain with conversion
+
+## CompareLY_HFO.py
+
+makes the plot of different LY adn energy resolution measured for hte dfififerent HFO configurations

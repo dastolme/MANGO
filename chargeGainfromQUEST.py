@@ -75,6 +75,7 @@ df["LightGain"] = df["Peak"].apply(intTOgain)
 df["LightGain_err"] = df["dPeak"].apply(intTOgain)
 
 
+
 main_file=ROOT.TFile("LightChargeComparison.root","RECREATE")
 # Create a new TGraphErrors object
 graphLight = grapherr(df["VGEM"], df["LightGain"], np.ones(len(df)), df["LightGain_err"],"VGEM [V]","Light Gain",name="Light Gain vs VGEM",color=2,write=False)
@@ -128,3 +129,4 @@ canvas.Update()
 
 # Save the canvas as a PNG file
 canvas.SaveAs("DifferenceAndRatio.png")
+
