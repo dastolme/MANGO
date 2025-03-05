@@ -4,6 +4,7 @@ picoammeter_Data/
 picoammeter_Data_OLD/
 *.zip
 uniformity
+*.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

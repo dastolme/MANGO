@@ -20,8 +20,11 @@ e=1.6E-19
 # Set up argument parser
 parser = argparse.ArgumentParser(description="Process and plot data from files.")
 parser.add_argument('--plot', action='store_true', help="Activate plotting of second column data")
+parser.add_argument('--hfo_qnt', type=str, help="HFO quantity in the chamber",default=0)
 
 args = parser.parse_args()
+
+hfo_qnt=args.hfo_qnt
 
 def grapherr(x,y,ex,ey,x_string, y_string,name=None, color=4, markerstyle=22, markersize=2,write=True):
     plot = ROOT.TGraphErrors(len(x),  np.array(x  ,dtype="d"),  np.array(y  ,dtype="d"),  np.array(ex  ,dtype="d")  ,   np.array(ey  ,dtype="d") )
@@ -35,11 +38,12 @@ def grapherr(x,y,ex,ey,x_string, y_string,name=None, color=4, markerstyle=22, ma
     if write==True: plot.Write()
     return plot
 
-
 def read_second_column(filename):
     # Read only the second column (index 1) from the file
     second_column = np.loadtxt(filename, usecols=1)
-    return second_column
+    # Remove any NaN values from the array
+    filtered_column = second_column[~np.isnan(second_column)]
+    return filtered_column
 
 def plot_second_column(filename):
     # Load the second column from the file (index 1)
@@ -64,7 +68,7 @@ def get_vgem_number(filename):
     else:
         return None
 
-data_dir = "picoammeter_Data/"
+data_dir = f"picoammeter_Data/HFO_{hfo_qnt}/"
 
 # Iterate over each file in the specified directory if plotting is activated
 if args.plot:
@@ -77,7 +81,7 @@ if args.plot:
         # Plot the data using the provided plotting function
         plot_second_column(file_path)
 
-        print(f"File: {filename}")
+        print(f"File: {file_path}")
 
 def plot_tgrapherrors(gr, output_filename="output.png",setLog=False,setGrid=True, pavetext=None):
     # Create a canvas with a specified title and dimensions.
@@ -226,7 +230,7 @@ pavetext.SetFillColorAlpha(ROOT.kWhite, 0)  # Fully transparent fill color
 pavetext.SetTextAlign(12)
 
 
-plot_tgrapherrors(gainPlot, "GainPico_HeCF4.png", setLog=True, setGrid=True, pavetext=pavetext)
+plot_tgrapherrors(gainPlot, f"GainPico_HeCF4HFO_{hfo_qnt}.png", setLog=True, setGrid=True, pavetext=pavetext)
 
 #! gain corrected
 
@@ -249,38 +253,40 @@ pavetext.AddText("#color[2]{1M#Omega resistor, no correction on VGEM}")
 #pavetext.AddText("#color[4]{33M#Omega resistor VGEM corrected}")
 pavetext.AddText("#color[4]{1M#Omega resistor VGEM corrected}")
 
-#! test point
-noise_mega_curr=read_second_column("picoammeter_Data/BKG_HFO_0_VGEM430_1_MOhm.txt")
-source_mega_curr=read_second_column("picoammeter_Data/SOURCE_HFO_0_VGEM430_1_MOhm.txt")
-new_rate=9.5E3
-err_new_rate=0.5E3
+if hfo_qnt==0:
 
-# Calculate the mean and standard error of the mean
-mean_noise_mega_curr = np.mean(noise_mega_curr)
-mean_source_mega_curr = np.mean(source_mega_curr)
-mean_noise_error = np.std(noise_mega_curr) / np.sqrt(len(noise_mega_curr))
-mean_source_error = np.std(source_mega_curr) / np.sqrt(len(source_mega_curr))
+    #! test point
+    noise_mega_curr=read_second_column("picoammeter_Data/HFO_0/BKG_HFO_0_VGEM430_1_MOhm.txt")
+    source_mega_curr=read_second_column("picoammeter_Data/HFO_0/SOURCE_HFO_0_VGEM430_1_MOhm.txt")
+    new_rate=9.5E3
+    err_new_rate=0.5E3
 
-# Calculate the net current and error
-net_curr = mean_source_mega_curr - mean_noise_mega_curr
-net_curr_error = np.sqrt(mean_source_error**2 + mean_noise_error**2)
+    # Calculate the mean and standard error of the mean
+    mean_noise_mega_curr = np.mean(noise_mega_curr)
+    mean_source_mega_curr = np.mean(source_mega_curr)
+    mean_noise_error = np.std(noise_mega_curr) / np.sqrt(len(noise_mega_curr))
+    mean_source_error = np.std(source_mega_curr) / np.sqrt(len(source_mega_curr))
 
-# Calculate the gain
-gain = abs(net_curr) / (new_rate * e*n0)
-gain_error = gain*np.sqrt((net_curr_error/net_curr)**2 + (err_new_rate/new_rate)**2)
+    # Calculate the net current and error
+    net_curr = mean_source_mega_curr - mean_noise_mega_curr
+    net_curr_error = np.sqrt(mean_source_error**2 + mean_noise_error**2)
 
-print("Gain 1Mega 430V: ", gain, "+/-", gain_error)
+    # Calculate the gain
+    gain = abs(net_curr) / (new_rate * e*n0)
+    gain_error = gain*np.sqrt((net_curr_error/net_curr)**2 + (err_new_rate/new_rate)**2)
 
-new_tgraph=grapherr([430], [gain], [1], [gain_error], "VGEM [V]", "Gain", "Gain vs VGEM no voltage drop", write=True,markerstyle=20, color=2)
+    print("Gain 1Mega 430V: ", gain, "+/-", gain_error)
 
-mulitgraph=ROOT.TMultiGraph()
+    new_tgraph=grapherr([430], [gain], [1], [gain_error], "VGEM [V]", "Gain", "Gain vs VGEM no voltage drop", write=True,markerstyle=20, color=2)
 
-mulitgraph.Add(gainPlot)
-mulitgraph.Add(new_tgraph)
+    mulitgraph=ROOT.TMultiGraph()
 
-mulitgraph.SetNameTitle("Gain vs VGEM","Gain vs VGEM")
-mulitgraph.GetXaxis().SetTitle("VGEM [V]")
-mulitgraph.GetYaxis().SetTitle("Gain")
-mulitgraph.GetYaxis().SetRangeUser(1E5, 5E6)
+    mulitgraph.Add(gainPlot)
+    mulitgraph.Add(new_tgraph)
 
-plot_tgrapherrors(mulitgraph, "GainPico_corr_HeCF4.png", setLog=True, setGrid=True, pavetext=pavetext)
+    mulitgraph.SetNameTitle("Gain vs VGEM","Gain vs VGEM")
+    mulitgraph.GetXaxis().SetTitle("VGEM [V]")
+    mulitgraph.GetYaxis().SetTitle("Gain")
+    mulitgraph.GetYaxis().SetRangeUser(1E5, 5E6)
+
+    plot_tgrapherrors(mulitgraph, "GainPico_corr_HeCF4.png", setLog=True, setGrid=True, pavetext=pavetext)

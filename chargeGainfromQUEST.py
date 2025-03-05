@@ -8,7 +8,7 @@ def intTOgain(integral):
     lightFraction=0.07# gamma/e- only visible light
     #omega=9.2E-4#solid angle fraction LIME
     omega=1.16E-3#solid angle fraction QUEST MANGO
-    QE=0.35#QE @ 650nm
+    QE=1#QE @ 650nm
     n0=168#stima Fe55
     return (integral*conversionFactor)/(lightFraction*omega*QE*n0)
 
