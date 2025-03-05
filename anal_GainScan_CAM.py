@@ -215,19 +215,30 @@ for gem in VGEMs:
         root_path=var.replace("/","_")
         main_file.cd(root_path)
         h=results[gem][var]["histogram"]
+        h_tgasusssigma=results[gem]["sc_tgausssigma"]["histogram"]
         if var == "sc_integral":
             
             # hfo 0%
-            #if int(gem)>360: limits=[0,300000]
-            #else: limits=[0,5000]
+            if int(gem)>360: limits=[0,300000]
+            else: limits=[0,5000]
             # hfo 1%
-            if int(gem)>390: limits=[4000,100000]
-            else: limits=[0,10000]
+            #if int(gem)>390: limits=[4000,100000]
+            #else: limits=[0,10000]
                 
             f1=ROOT.TF1("f1","gaus",limits[0],limits[1])
             h.Fit(f1,"RQ")
             h.Write()
-            analysis_results[gem] = {"mean": f1.GetParameter(1), "mean_err": f1.GetParError(1), "sigma": f1.GetParameter(2), "sigma_err": f1.GetParError(2)}
+            analysis_results[gem].update({"mean": f1.GetParameter(1), "mean_err": f1.GetParError(1), "sigma": f1.GetParameter(2), "sigma_err": f1.GetParError(2)})
+
+        if var=="sc_tgausssigma":
+            if int(gem)>410: limits=[5,20]
+            else: limits=[0,10]
+                
+            f1=ROOT.TF1("f1","gaus",limits[0],limits[1])
+            h_tgasusssigma.Fit(f1,"RQ")
+            h_tgasusssigma.Write()
+            analysis_results[gem].update({"sc_tgausssigma": f1.GetParameter(1), "sc_tgausssigma_err": f1.GetParError(1)})
+
 
         else:
             h.Write()
@@ -298,5 +309,14 @@ def plot_tgrapherrors(gr, output_filename="output.png",setLog=False,setGrid=True
     # Optionally, you can return the canvas if further manipulation is needed.
     return canvas
 
+# Extract tgaussigma values and their errors for each VGEM
+tgaussigma_values = [analysis_results[gem]["sc_tgausssigma"] for gem in VGEMs]
+tgaussigma_errors = [analysis_results[gem]["sc_tgausssigma_err"] for gem in VGEMs]
+
+# Create and write the tgaussigma graph
+graph_tgaussigma = grapherr(VGEMs, tgaussigma_values, vgem_err, tgaussigma_errors, "VGEM [V]", "tgaussigma", name="tgaussigma vs VGEM", markerstyle=21, markersize=2)
+graph_tgaussigma.Write()
+
 plot_tgrapherrors(grah_res, f"HFO{hfo_qnt}_Resolution_vs_VGEM.png")
 plot_tgrapherrors(graph_int, f"HFO{hfo_qnt}_Integral_vs_VGEM.png",setLog=True,pavetext=fit_text)
+plot_tgrapherrors(graph_tgaussigma, f"HFO{hfo_qnt}_tgaussigma_vs_VGEM.png")
