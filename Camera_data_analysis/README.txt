@@ -1,3 +1,3 @@
-Only light contiene l'analisi dei dati presi solo con la camera (prima settimana). Le percentuali di 0 e 1% di HFO mancano perché sono fatte direttamente da Davide
+Only light has the analysis of data taken with only camera (first week). 0 and 1 % HFO are missing as Davide did them.
 
-With_charge contiene l'analisi dei dati presi con la camera, ma correlati alle prese dati con la carica (seconda settimana)
+With_charge has the analysis of data taken with camera in time with the charge measurement (second week)
