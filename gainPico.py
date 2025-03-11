@@ -8,12 +8,8 @@ import re
 import matplotlib.pyplot as plt
 
 #meassured from Plateau
-#first measuremtn
-rate=12E3
-err_rate=0.2E3
-#second mesurement
-rate=10E3
-err_rate=0.2E3
+
+
 n0=168
 e=1.6E-19
 
@@ -25,6 +21,14 @@ parser.add_argument('--hfo_qnt', type=str, help="HFO quantity in the chamber",de
 args = parser.parse_args()
 
 hfo_qnt=args.hfo_qnt
+
+if hfo_qnt=="0":
+    #second mesurement
+    rate=10E3
+    err_rate=0.2E3
+elif hfo_qnt=="1":
+    rate=9.6E3
+    err_rate=0.3E3
 
 def grapherr(x,y,ex,ey,x_string, y_string,name=None, color=4, markerstyle=22, markersize=2,write=True):
     plot = ROOT.TGraphErrors(len(x),  np.array(x  ,dtype="d"),  np.array(y  ,dtype="d"),  np.array(ex  ,dtype="d")  ,   np.array(ey  ,dtype="d") )
@@ -204,7 +208,7 @@ print("VGEM Numbers:", vgem_numbers)
 print("Net Means:", net_means)
 print("Net Errors:", net_errors)
 
-main_file = ROOT.TFile("GainPico.root","RECREATE")
+main_file = ROOT.TFile(f"GainPico_{hfo_qnt}.root","RECREATE")
 grapherr(vgem_numbers, net_means, np.zeros_like(net_means), net_errors, "VGEM [V]", "Current [A]", "Current vs VGEM ", write=True)
 
 
