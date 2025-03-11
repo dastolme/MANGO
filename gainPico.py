@@ -246,7 +246,7 @@ gains_relative_errors = gains_relative*np.sqrt((net_errors/net_means)**2 + (err_
 print("Gains relative:", gains_relative)
 
 
-chargegainPlot=grapherr(vgem_numbers, gains_relative, np.ones(len(vgem_numbers)), gains_relative_errors, "VGEM [V]", "Charge/keV [C/keV]", "Charge/keV vs VGEM", write=False,markerstyle=21)
+chargegainPlot=grapherr(vgem_numbers, gains_relative, np.ones(len(vgem_numbers)), gains_relative_errors, "VGEM [V]", "Charge-keV [C/keV]", "Charge-keV vs VGEM", write=False,markerstyle=21)
 #expo=ROOT.TF1("expo","expo",300,410)
 #gainPlot.Fit("expo","RQ")
 chargegainPlot.Write()
