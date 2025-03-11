@@ -33,3 +33,11 @@ from measurment summarized in LY_HeCF4.txt try to get the electronic gain with c
 ## CompareLY_HFO.py
 
 makes the plot of different LY adn energy resolution measured for hte dfififerent HFO configurations
+
+## QE_effective/Spectra/Refine_histo.cxx
+
+compile with g++ Refine_histo.cxx -o <progname> `root-config --cflags --libs`. Runs as ./progname <path_to_spectrum> . Transforms a spectrum resampling and interpolating fixing a point every 2 nm. Output in Outfile_res.txt
+
+## QE_effective/EstimateQE.cxx
+
+compile with g++ EstimateQE.cxx -o <progname> `root-config --cflags --libs`. Runs as ./progname Config.txt . It starts from the spectra inside Spectra folder and produces a ROOT file containing the emission spectrum and the "survived" spectrum for a variety of combinations of gas, detector, window and pressure. The choice of parameters follows what the Config.txt tells it to do. It also prints the effective QE and the survived photons per secondary electron

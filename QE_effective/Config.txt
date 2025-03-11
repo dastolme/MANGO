@@ -1,0 +1,4 @@
+Detector  :  Quest1,   #Possibilities: Fusion, Quest1, Quest2, PMT_bialkali_borosilicate, PMT_GaAsP
+Window    :  Mylar,    #Possibilities: Mylar, PMMA
+Gas       :  He_CF4_SF61,   #Possibilities: He_CF4, He_CF4_HFO1, He_CF4_HFO2.5, He_CF4_SF61
+Pressure   :  650,     #Possibilities: 1000, 900, 700, 500, emission_paper (this depends on the gas mixture)
