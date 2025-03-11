@@ -6,6 +6,7 @@ picoammeter_Data_OLD/
 uniformity
 *.ini
 desktop.ini
+iniRM.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

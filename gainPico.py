@@ -29,6 +29,9 @@ if hfo_qnt=="0":
 elif hfo_qnt=="1":
     rate=9.6E3
     err_rate=0.3E3
+else:
+    rate=9.5E3
+    err_rate=0.5E3
 
 def grapherr(x,y,ex,ey,x_string, y_string,name=None, color=4, markerstyle=22, markersize=2,write=True):
     plot = ROOT.TGraphErrors(len(x),  np.array(x  ,dtype="d"),  np.array(y  ,dtype="d"),  np.array(ex  ,dtype="d")  ,   np.array(ey  ,dtype="d") )
@@ -233,8 +236,39 @@ pavetext.SetBorderSize(0)  # No border
 pavetext.SetFillColorAlpha(ROOT.kWhite, 0)  # Fully transparent fill color
 pavetext.SetTextAlign(12)
 
-
 plot_tgrapherrors(gainPlot, f"GainPico_HeCF4HFO_{hfo_qnt}.png", setLog=True, setGrid=True, pavetext=pavetext)
+
+#! charge/keV
+# Calculate the gain from the net means
+gains_relative = abs(net_means) / (rate * 5.9)
+gains_relative_errors = gains_relative*np.sqrt((net_errors/net_means)**2 + (err_rate/rate)**2)
+
+print("Gains relative:", gains_relative)
+
+
+chargegainPlot=grapherr(vgem_numbers, gains_relative, np.ones(len(vgem_numbers)), gains_relative_errors, "VGEM [V]", "Charge/keV [C/keV]", "Charge/keV vs VGEM", write=False,markerstyle=21)
+#expo=ROOT.TF1("expo","expo",300,410)
+#gainPlot.Fit("expo","RQ")
+chargegainPlot.Write()
+
+"""
+pavetext = ROOT.TPaveText(0.15, 0.7, 0.45, 0.9, "NDC")
+pavetext.AddText(f"Gain = exp(A + B * VGEM)")
+pavetext.AddText(f"A = {expo.GetParameter(0):.2e} +/- {expo.GetParError(0):.2e}")
+pavetext.AddText(f"B = {expo.GetParameter(1):.2e} +/- {expo.GetParError(1):.2e}")
+if expo.GetNDF() != 0:
+    pavetext.AddText(f"Chi2/NDF: {expo.GetChisquare() / expo.GetNDF():.2e}")
+pavetext.SetFillStyle(0)  # No fill
+pavetext.SetBorderSize(0)  # No border
+pavetext.SetFillColorAlpha(ROOT.kWhite, 0)  # Fully transparent fill color
+pavetext.SetTextAlign(12)
+"""
+
+plot_tgrapherrors(chargegainPlot, f"ChargeKeV_HeCF4HFO_{hfo_qnt}.png", setLog=True, setGrid=True, pavetext=None)
+
+
+
+
 
 #! gain corrected
 
