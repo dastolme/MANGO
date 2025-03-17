@@ -1,0 +1,1 @@
+HFO  :  1,   #Possibilities: 1, 2.5, 5, 7.5, 10
